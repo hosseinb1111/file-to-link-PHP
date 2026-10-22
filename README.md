@@ -1,97 +1,105 @@
-# file-to-link
+# file-to-link-PHP
 
-A tiny single-file PHP uploader. Drop a file (or paste some text), get a short
-random link back. No accounts, no folders, no frameworks — just one `index.php`
-and a MySQL table.
+**A tiny, self-hosted file uploader that turns files and text into shareable links.**
 
-Built because I kept needing a quick "put this file somewhere and give me a URL"
-tool on shared hosting, and every existing solution wanted Composer, a build
-step, or a whole admin panel. This one is a few hundred lines of plain PHP.
+Drop a file, paste some text, and get a short, random URL you can share instantly. No accounts, no frameworks, no Composer, and no build step — just one PHP file and a MySQL database.
 
-![screenshot](screenshot.png)
+Built for shared hosting, where you need a quick way to upload something and get a link without deploying an entire application.
 
----
+![file-to-link screenshot](screenshot.png)
 
-## What it does
+## ✨ Features
 
-- **Drag & drop upload** — or click to pick a file
-- **Paste text** — saved as `snippet.txt`, previewed as plain text
-- **Random short links** — 8-character codes from an unambiguous alphabet
-  (`abc…xyz23456789`, no `0/O/l/I`) so links are easy to read out loud
-- **Real upload progress bar** — powered by `XMLHttpRequest.upload.onprogress`
-  (the `fetch()` API still can't report upload progress)
-- **Inline previews** — images render in the browser, text shows in a `<pre>`,
-  everything else gets a download button
-- **Beautiful 404** — unknown route or dead code both land on the same page
-- **Zero dependencies** — no Composer, no npm, no build step, no external fonts
-  or scripts. The favicon is an inline `data:` SVG.
+- **Drag & drop uploads** — drop a file onto the upload area or select one manually.
+- **Text snippets** — paste text and save it as `snippet.txt`.
+- **Short, random links** — unique 8-character codes using an unambiguous alphabet, avoiding confusing characters such as `0`, `O`, `l`, and `I`.
+- **Live upload progress** — accurate upload progress powered by `XMLHttpRequest.upload.onprogress`.
+- **Instant previews** — display images in the browser and text in a readable `<pre>` block.
+- **Direct downloads** — download files with their original filenames.
+- **Custom 404 page** — unknown routes and invalid codes share the same polished error page.
+- **Zero dependencies** — no Composer, npm, external scripts, or external fonts. Even the favicon is an inline SVG.
 
-## Requirements
+## 🛠️ Requirements
 
-- PHP **7.4+**
+- PHP **7.4 or newer**
 - MySQL or MariaDB
-- Apache with `mod_rewrite`, or any server where you can route unknown paths
-  to `index.php` (Nginx snippet below)
+- Apache with `mod_rewrite`, or a web server configured to route application requests to `index.php`
 
-## Setup
+## 🚀 Installation
 
-### 1. Database
+### 1. Create the database table
 
-Run this in phpMyAdmin (or any MySQL client):
+Run the following SQL in phpMyAdmin or your preferred MySQL client:
 
 ```sql
 CREATE TABLE IF NOT EXISTS `drops` (
-  `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `code`       VARCHAR(32)  NOT NULL,
-  `filename`   VARCHAR(255) DEFAULT NULL,
-  `mime`       VARCHAR(190) DEFAULT NULL,
-  `size`       BIGINT UNSIGNED NOT NULL DEFAULT 0,
-  `is_text`    TINYINT(1)   NOT NULL DEFAULT 0,
-  `content`    LONGBLOB,
-  `created_at` DATETIME     NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `code` (`code`),
-  KEY `created_at` (`created_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `code`       VARCHAR(32) NOT NULL,
+    `filename`   VARCHAR(255) DEFAULT NULL,
+    `mime`       VARCHAR(190) DEFAULT NULL,
+    `size`       BIGINT UNSIGNED NOT NULL DEFAULT 0,
+    `is_text`    TINYINT(1) NOT NULL DEFAULT 0,
+    `content`    LONGBLOB,
+    `created_at` DATETIME NOT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `code` (`code`),
+    KEY `created_at` (`created_at`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
 ```
 
-The script will also create this table on first request if it's missing, so
-strictly speaking you can skip this step — but creating it yourself is better
-because you control the charset and collation.
+The application can also create the table automatically on its first request. Creating it manually is recommended so you can control the database configuration.
 
-### 2. Configure
+### 2. Configure your database
 
-Open `index.php` and edit the four constants at the top:
+Open `index.php` and update the database credentials and upload settings near the top of the file:
 
 ```php
-const DB_HOST = 'sqlXXX.infinityfree.com';   // your MySQL host
-const DB_NAME = 'if0_XXXXXXXX_drops';        // database name
-const DB_USER = 'if0_XXXXXXXX';              // MySQL *user* — not the db name
+const DB_HOST = 'sqlXXX.infinityfree.com';
+const DB_NAME = 'if0_XXXXXXXX_drops';
+const DB_USER = 'if0_XXXXXXXX';
 const DB_PASS = 'your-password';
 
-const MAX_UPLOAD = 50 * 1024 * 1024;         // 50 MB
+const MAX_UPLOAD = 50 * 1024 * 1024; // 50 MB
 const CODE_LEN   = 8;
 ```
 
-On InfinityFree (and most shared hosts), the MySQL **user** is usually
-`if0_XXXXXXXX` while the **database** is `if0_XXXXXXXX_something`. Don't mix
-them up — that's the #1 cause of `SQLSTATE[HY000] [1045] Access denied`.
+Replace the example values with your actual hosting credentials.
 
-### 3. Upload and set permissions
+**Important for InfinityFree users:** Your database name and database username are usually different.
 
-Drop `index.php` and `.htaccess` into your web root (`htdocs/` on
-InfinityFree). That's it.
+- `DB_NAME` — the complete database name, such as `if0_XXXXXXXX_drops`.
+- `DB_USER` — the database username, such as `if0_XXXXXXXX`.
 
-### 4. `.htaccess` (Apache)
+Using the database name instead of the username is a common cause of `SQLSTATE[HY000] [1045] Access denied` errors.
+
+### 3. Upload the files
+
+Upload these two files to your website's document root:
+
+```text
+index.php
+.htaccess
+```
+
+On InfinityFree, this is typically the `htdocs/` directory.
+
+### 4. Configure URL rewriting
+
+For Apache, create a `.htaccess` file in the same directory as `index.php`:
 
 ```apache
 RewriteEngine On
+
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^ index.php [L]
 ```
 
-**Nginx** equivalent:
+This routes application URLs to `index.php` while allowing existing files and directories to be served normally.
+
+For Nginx, use the following configuration inside the appropriate server block:
 
 ```nginx
 location / {
@@ -99,95 +107,100 @@ location / {
 }
 ```
 
-## Routes
+**That's it!** Open your domain, upload a file or paste some text, and share the generated link.
 
-| Method | Path              | Purpose                                       |
-| ------ | ----------------- | --------------------------------------------- |
-| `GET`  | `/`               | Upload UI                                     |
-| `POST` | `/api/upload`     | Save file or text, returns `{ok, code, url}`  |
-| `GET`  | `/{code}`         | View / preview a saved item                   |
-| `GET`  | `/raw/{code}`     | Raw bytes, inline (`Content-Type` from row)   |
-| `GET`  | `/dl/{code}`      | Force download with original filename         |
-| `*`    | anything else     | 404 page                                      |
+## 🔗 Routes
 
-## About the 50 MB limit
+| Method | Route | Description |
+|---|---|---|
+| `GET` | `/` | Upload interface |
+| `POST` | `/api/upload` | Upload a file or text snippet |
+| `GET` | `/{code}` | Preview a saved item |
+| `GET` | `/raw/{code}` | Serve the original content inline |
+| `GET` | `/dl/{code}` | Download the item with its filename |
+| `*` | Any other route | Custom 404 page |
 
-The code itself accepts up to 50 MB. Whether your **host** does is a different
-question:
+### Upload API
 
-- **PHP `upload_max_filesize` / `post_max_size`** — on InfinityFree's free tier
-  this is capped around 10 MB and the panel often ignores overrides. Paid
-  accounts honor them.
-- **MySQL `max_allowed_packet`** — even if PHP accepts a 50 MB file, the
-  `INSERT` into `LONGBLOB` can fail with `MySQL server has gone away` if the
-  packet limit is lower. Free tier is usually 16 MB or less.
+The `/api/upload` endpoint accepts a file or pasted text and returns a JSON response containing the generated code and shareable URL.
 
-If you hit either wall, the fix is on the host side, not in this script. For
-serious large-file hosting, use object storage (S3, R2, Backblaze B2) with
-presigned uploads instead of storing blobs in MySQL.
+A successful response follows this structure:
 
-## Security notes
-
-This is a **personal / small-team tool**, not a public file host. Before opening
-it to the internet at large, consider adding:
-
-- Rate limiting (per IP, per minute)
-- A storage quota / cleanup cron (delete rows older than N days)
-- Authentication (basic auth via `.htaccess` is the lazy option)
-- Antivirus scanning (ClamAV) for uploaded files
-- `Content-Security-Policy` headers
-
-Uploaded files are served with `X-Content-Type-Options: nosniff` and the MIME
-type recorded at upload time, which mitigates — but doesn't eliminate — stored
-XSS via crafted SVG/HTML. If you expect hostile uploads, serve `/raw/` from a
-separate origin.
-
-## Project layout
-
+```json
+{
+  "ok": true,
+  "code": "a7bc234d",
+  "url": "https://example.com/a7bc234d"
+}
 ```
+
+The response above is an example; the actual code and URL are generated by the application.
+
+## 📁 How it works
+
+1. Select a file or paste text into the upload interface.
+2. The browser uploads the content and displays real-time progress.
+3. PHP stores the content and its metadata in MySQL.
+4. The application generates a short, random code for the uploaded item.
+5. Share the resulting URL with anyone who needs access.
+
+Files and text snippets are stored as database BLOBs, so the application doesn't require a separate uploads directory.
+
+## ⚠️ Upload size limitations
+
+The application is configured to accept files up to **50 MB**, but the actual maximum depends on your hosting environment.
+
+Two common server-side limits can prevent larger uploads:
+
+- **PHP upload limits:** `upload_max_filesize` and `post_max_size` determine how much data PHP accepts. InfinityFree's free hosting has historically imposed limits around 10 MB, and configuration overrides may not be permitted.
+- **MySQL packet limits:** `max_allowed_packet` can prevent large BLOBs from being inserted, potentially causing errors such as `MySQL server has gone away`.
+
+Increasing `MAX_UPLOAD` in the application does not override these server limits.
+
+For large-file hosting, consider storing files in object storage such as Amazon S3, Cloudflare R2, or Backblaze B2 instead of keeping their contents in MySQL.
+
+## 🔒 Security considerations
+
+**Designed for personal use and small teams, not as an unrestricted public file-hosting service.**
+
+Before exposing the application to the public internet, consider adding:
+
+- **Rate limiting** to restrict repeated uploads from individual IP addresses.
+- **Storage quotas and automatic cleanup** to prevent unbounded database growth.
+- **Authentication** to restrict who can upload files. HTTP Basic Authentication through `.htaccess` can be a simple starting point.
+- **Malware scanning** for uploaded files, using a tool such as ClamAV.
+- **Content Security Policy (CSP)** headers to reduce the impact of browser-based attacks.
+
+The application uses `X-Content-Type-Options: nosniff` and the MIME type recorded during upload. These measures help mitigate certain content-sniffing and stored-XSS risks, but they do not make arbitrary uploaded content safe.
+
+If uploads may be malicious, serve user-provided content from a separate origin rather than the same origin as the application. In particular, treat SVG, HTML, and other potentially active content carefully.
+
+## 📂 Project structure
+
+```text
 file-to-link-PHP/
-├── index.php      # the whole app
-├── .htaccess      # Apache rewrite
-├── README.md
-├── LICENSE
-└── screenshot.png # optional
+├── index.php       # Application: routing, uploads, and previews
+├── .htaccess       # Apache URL rewriting
+├── README.md       # Documentation
+├── LICENSE         # MIT license
+└── screenshot.png  # screenshot of the project
 ```
 
-## License
+The application itself is contained in a single PHP file. The other files provide routing configuration, documentation, licensing, and an optional screenshot.
 
-MIT — see [LICENSE](LICENSE).
+## 📄 License
 
-## Author
+Released under the **MIT License**. You are free to use, modify, distribute, and adapt the project under its terms.
+
+See [LICENSE](LICENSE) for the complete license text.
+
+## 👨‍💻 Author
 
 **Hossein Seyed Bagheri**
 
 - GitHub: [@hosseinb1111](https://github.com/hosseinb1111)
-- Project: [file-to-link-PHP](https://github.com/hosseinb1111/file-to-link-PHP)
+- Repository: [file-to-link-PHP](https://github.com/hosseinb1111/file-to-link-PHP)
 
 ---
 
-## License text
-
-```
-MIT License
-
-Copyright (c) 2026 Hossein Seyed Bagheri
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
+*Small, simple, self-hosted file sharing — just PHP and MySQL.*
