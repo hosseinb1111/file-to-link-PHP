@@ -171,7 +171,7 @@ MIT — see [LICENSE](LICENSE).
 ```
 MIT License
 
-Copyright (c) 2025 Hossein Seyed Bagheri
+Copyright (c) 2026 Hossein Seyed Bagheri
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
