@@ -1,4 +1,3 @@
-```markdown
 # file-to-link
 
 A tiny single-file PHP uploader. Drop a file (or paste some text), get a short
