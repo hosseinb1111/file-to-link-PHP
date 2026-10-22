@@ -6,7 +6,9 @@ and a MySQL table.
 
 Built because I kept needing a quick "put this file somewhere and give me a URL"
 tool on shared hosting, and every existing solution wanted Composer, a build
-step, or a whole admin panel. This one is 400-ish lines of plain PHP.
+step, or a whole admin panel. This one is a few hundred lines of plain PHP.
+
+![screenshot](screenshot.png)
 
 ---
 
@@ -26,8 +28,7 @@ step, or a whole admin panel. This one is 400-ish lines of plain PHP.
 
 ## Requirements
 
-- PHP **7.4+** (uses `str_starts_with`? no — I kept it 7.4-safe; `random_int`,
-  `PDO`, `LONGBLOB` are the only non-trivial requirements)
+- PHP **7.4+**
 - MySQL or MariaDB
 - Apache with `mod_rewrite`, or any server where you can route unknown paths
   to `index.php` (Nginx snippet below)
@@ -141,9 +142,20 @@ type recorded at upload time, which mitigates — but doesn't eliminate — stor
 XSS via crafted SVG/HTML. If you expect hostile uploads, serve `/raw/` from a
 separate origin.
 
+## Project layout
+
+```
+file-to-link-PHP/
+├── index.php      # the whole app
+├── .htaccess      # Apache rewrite
+├── README.md
+├── LICENSE
+└── screenshot.png # optional
+```
+
 ## License
 
-MIT — see [LICENSE](LICENSE) below.
+MIT — see [LICENSE](LICENSE).
 
 ## Author
 
@@ -154,7 +166,7 @@ MIT — see [LICENSE](LICENSE) below.
 
 ---
 
-## LICENSE
+## License text
 
 ```
 MIT License
@@ -179,53 +191,3 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
-```
-
----
-
-## Also create `LICENSE` (plain file, no markdown fences)
-
-GitHub auto-detects `LICENSE` at the repo root and shows an "MIT" badge next to the repo name. Paste exactly this:
-
-```
-MIT License
-
-Copyright (c) 2025 Hossein Seyed Bagheri
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
-
-## Suggested repo layout
-
-```
-file-to-link-PHP/
-├── index.php
-├── .htaccess
-├── README.md
-└── LICENSE
-```
-
-## Two small tweaks worth making before you push
-
-1. **Add a screenshot** to the README — GitHub renders images and it makes the repo look 10× more legit. Save one as `screenshot.png` in the repo and add right under the first paragraph:
-   ```markdown
-   ![screenshot](screenshot.png)
-   ```
-2. **Repo description** on GitHub (the short line under the name) — keep it under ~120 chars:
-   > Single-file PHP drag-and-drop uploader. Get a short random link for any file or text. MySQL, no dependencies.
