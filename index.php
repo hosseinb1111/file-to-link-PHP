@@ -157,98 +157,156 @@ function start(string $title): void
     echo "<title>" . h($title) . "</title>";
     echo "<link rel=\"icon\" type=\"image/svg+xml\" href=\"" . $favicon . "\">";
     ?>
+<script>
+  (function () {
+    try {
+      var t = localStorage.getItem('fs_theme');
+      if (!t) t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+    } catch (e) {}
+  })();
+</script>
 <style>
+  :root {
+    --bg: #0b0b10;
+    --bg-glow1: rgba(16,185,129,.10);
+    --bg-glow2: rgba(167,139,250,.07);
+    --surface: #14141c;
+    --fill: rgba(255,255,255,.035);
+    --fill-hv: rgba(255,255,255,.07);
+    --fill-strong: rgba(255,255,255,.06);
+    --fill-input: rgba(255,255,255,.04);
+    --ln: rgba(255,255,255,.08);
+    --ln2: rgba(255,255,255,.14);
+    --tx: #eceff5;
+    --tx2: #9aa4b2;
+    --tx3: #5f6a79;
+    --ac: #10b981;
+    --ac-txt: #34d399;
+    --ac0: rgba(16,185,129,.07);
+    --ac-ln: rgba(16,185,129,.25);
+    --rd: #f87171;
+    --rd1: rgba(248,113,113,.13);
+    --err-tx: #fca5a5;
+    --ok-bg: rgba(16,185,129,.07);
+    --code-bg: #0f0f16;
+    --sh: 0 1px 2px rgba(0,0,0,.4), 0 8px 26px rgba(0,0,0,.3);
+    --e: cubic-bezier(.4,0,.2,1);
+  }
+  html[data-theme="light"] {
+    --bg: #f3f5f9;
+    --bg-glow1: rgba(5,150,105,.08);
+    --bg-glow2: rgba(124,58,237,.05);
+    --surface: #ffffff;
+    --fill: rgba(255,255,255,.8);
+    --fill-hv: rgba(255,255,255,.95);
+    --fill-strong: rgba(15,23,42,.05);
+    --fill-input: rgba(255,255,255,.9);
+    --ln: rgba(15,23,42,.09);
+    --ln2: rgba(15,23,42,.16);
+    --tx: #111826;
+    --tx2: #54606f;
+    --tx3: #828d9b;
+    --ac: #059669;
+    --ac-txt: #047857;
+    --ac0: rgba(5,150,105,.06);
+    --ac-ln: rgba(5,150,105,.28);
+    --rd: #dc2626;
+    --rd1: rgba(220,38,38,.10);
+    --err-tx: #b91c1c;
+    --ok-bg: rgba(5,150,105,.06);
+    --code-bg: #f1f5f9;
+    --sh: 0 1px 2px rgba(15,23,42,.05), 0 8px 24px rgba(15,23,42,.07);
+  }
+
   * { box-sizing: border-box; }
   html, body { margin: 0; min-height: 100%; }
   body {
     font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    background: #f6f6f7; color: #1a1a1f;
+    background-color: var(--bg);
+    background-image:
+      radial-gradient(circle at 92% -8%, var(--bg-glow1), transparent 42%),
+      radial-gradient(circle at 4% 112%, var(--bg-glow2), transparent 40%);
+    color: var(--tx);
     padding: 40px 20px;
-  }
-
-  :root {
-    --line:    #d4d4d9;
-    --muted:   #6b6b73;
-    --text:    #1a1a1f;
-    --accent:  #2563eb;
-    --fact-bg: #ffffff;
+    transition: background-color .4s var(--e), color .4s var(--e);
   }
 
   .wrap { max-width: 560px; margin: 0 auto; }
 
   h1 { font-size: 20px; font-weight: 600; margin: 0 0 4px; letter-spacing: -.01em; }
-  .sub { color: #6b6b73; margin: 0 0 24px; font-size: 14px; }
+  .sub { color: var(--tx2); margin: 0 0 24px; font-size: 14px; }
 
   .drop {
     display: block; width: 100%;
-    border: 1.5px dashed #d4d4d9; border-radius: 8px;
+    border: 1.5px dashed var(--ln2); border-radius: 14px;
     padding: 36px 20px; text-align: center; cursor: pointer;
-    background: #fff; transition: .15s; font: inherit; color: inherit;
+    background: var(--fill-input); transition: .15s var(--e); font: inherit; color: inherit;
   }
-  .drop:hover, .drop.over { border-color: #2563eb; background: #f5f8ff; }
+  .drop:hover, .drop.over { border-color: var(--ac); background: var(--ac0); }
   .drop .big { font-weight: 500; margin-bottom: 2px; }
-  .drop .small { color: #6b6b73; font-size: 13px; }
+  .drop .small { color: var(--tx2); font-size: 13px; }
 
-  .or { text-align: center; color: #9a9aa3; font-size: 12px; margin: 20px 0; }
+  .or { text-align: center; color: var(--tx3); font-size: 12px; margin: 20px 0; }
 
   textarea {
-    width: 100%; border: 1px solid #d4d4d9; background: #fff;
-    border-radius: 8px; padding: 12px; color: inherit; outline: none;
+    width: 100%; border: 1px solid var(--ln2); background: var(--fill-input);
+    border-radius: 11px; padding: 12px; color: var(--tx); outline: none;
     font: 13px/1.5 ui-monospace, Menlo, Consolas, monospace;
     resize: vertical; min-height: 100px;
   }
-  textarea:focus { border-color: #2563eb; }
+  textarea:focus { border-color: var(--ac); }
   .row-between {
     display: flex; align-items: center; justify-content: space-between;
-    margin-top: 8px; font-size: 12px; color: #6b6b73;
+    margin-top: 8px; font-size: 12px; color: var(--tx2);
   }
 
   button, .btn {
-    display: inline-block; padding: 7px 14px; border-radius: 6px;
-    border: 1px solid #d4d4d9; background: #fff; color: #1a1a1f;
+    display: inline-block; padding: 7px 14px; border-radius: 9px;
+    border: 1px solid var(--ln); background: var(--fill-strong); color: var(--tx);
     font: inherit; font-size: 14px; font-weight: 500; cursor: pointer;
-    text-decoration: none; transition: .12s;
+    text-decoration: none; transition: .12s var(--e);
   }
-  button:hover, .btn:hover { background: #f3f3f5; text-decoration: none; }
-  .primary { background: #2563eb; border-color: #2563eb; color: #fff; }
-  .primary:hover { background: #1d4fd7; border-color: #1d4fd7; }
+  button:hover, .btn:hover { background: var(--fill-hv); text-decoration: none; }
+  .primary { background: linear-gradient(135deg, #10b981, #059669); border-color: transparent; color: #ffffff; }
+  .primary:hover { background: linear-gradient(135deg, #10b981, #059669); filter: brightness(1.08); }
   button:disabled { opacity: .5; cursor: not-allowed; }
 
   .progress { display: none; margin-top: 16px; }
   .progress.on { display: block; }
   .progress .info {
     display: flex; justify-content: space-between;
-    font-size: 12px; color: #6b6b73; margin-bottom: 6px;
+    font-size: 12px; color: var(--tx2); margin-bottom: 6px;
   }
-  .progress .track { height: 4px; background: #e3e3e8; border-radius: 2px; overflow: hidden; }
+  .progress .track { height: 4px; background: var(--fill-strong); border-radius: 2px; overflow: hidden; }
   .progress .fill {
-    height: 100%; width: 0; background: #2563eb;
+    height: 100%; width: 0; background: var(--ac);
     transition: width .1s linear;
   }
 
   .result {
-    display: none; margin-top: 16px; padding: 12px; border-radius: 8px;
-    border: 1px solid #d4d4d9; background: #fff;
+    display: none; margin-top: 16px; padding: 12px; border-radius: 11px;
+    border: 1px solid var(--ln); background: var(--fill);
   }
   .result.on { display: block; }
-  .result.ok  { border-color: #86d9a4; background: #f1fbf4; }
-  .result.err { border-color: #f0a9a9; background: #fdf2f2; color: #a11818; }
+  .result.ok  { border-color: var(--ac-ln); background: var(--ok-bg); }
+  .result.err { border-color: rgba(248,113,113,.3); background: var(--rd1); color: var(--err-tx); }
   .result .label {
     font-size: 11px; text-transform: uppercase; letter-spacing: .05em;
-    color: #6b6b73; margin-bottom: 6px;
+    color: var(--tx2); margin-bottom: 6px;
   }
-  .result.ok .label { color: #16a34a; }
+  .result.ok .label { color: var(--ac-txt); }
   .result .row-between { margin-top: 0; gap: 6px; }
   .result input {
     flex: 1; min-width: 0; padding: 7px 10px;
-    border: 1px solid #d4d4d9; border-radius: 6px;
-    background: #fff; color: inherit;
+    border: 1px solid var(--ln2); border-radius: 9px;
+    background: var(--fill-input); color: var(--tx);
     font: 13px ui-monospace, Menlo, Consolas, monospace;
   }
 
   footer {
     margin-top: 40px; text-align: center;
-    font-size: 12px; color: #9a9aa3;
+    font-size: 12px; color: var(--tx3);
   }
 
   .meta {
@@ -256,30 +314,57 @@ function start(string $title): void
     gap: 12px; flex-wrap: wrap; margin-bottom: 16px;
   }
   .meta .name { font-weight: 600; word-break: break-all; margin-bottom: 2px; }
-  .meta .info { font-size: 13px; color: #6b6b73; }
+  .meta .info { font-size: 13px; color: var(--tx2); }
   .meta .actions { display: flex; gap: 6px; }
 
   .preview {
-    border: 1px solid #d4d4d9; border-radius: 8px; background: #fff;
+    border: 1px solid var(--ln); border-radius: 14px; background: var(--fill);
     padding: 14px; max-height: 60vh; overflow: auto;
   }
   .preview pre {
     margin: 0;
     font: 13px/1.55 ui-monospace, Menlo, Consolas, monospace;
     white-space: pre-wrap; word-break: break-word;
+    background: var(--code-bg); color: var(--tx);
   }
   .preview img { max-width: 100%; display: block; margin: 0 auto; }
-  .preview .note { color: #6b6b73; text-align: center; padding: 30px 0; }
+  .preview .note { color: var(--tx2); text-align: center; padding: 30px 0; }
 
   .back {
-    display: inline-block; color: #6b6b73; font-size: 13px;
+    display: inline-block; color: var(--tx2); font-size: 13px;
     margin-bottom: 20px;
   }
-  .back:hover { color: #1a1a1f; text-decoration: none; }
+  .back:hover { color: var(--tx); text-decoration: none; }
 
   .nf { text-align: center; padding: 60px 20px; }
   .nf h1 { font-size: 48px; font-weight: 700; margin: 0 0 8px; }
-  .nf p  { color: #6b6b73; margin: 0 0 20px; }
+  .nf p  { color: var(--tx2); margin: 0 0 20px; }
+
+  /* ---- theme toggle ---- */
+  .theme-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 50;
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border-radius: 9px;
+    border: 1px solid var(--ln);
+    background: var(--fill-strong);
+    color: var(--tx2);
+    cursor: pointer;
+    padding: 0;
+    transition: all .2s var(--e);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .theme-toggle:hover { color: var(--tx); background: var(--fill-hv); }
+  .theme-toggle:focus-visible { outline: 1.5px solid var(--ac); outline-offset: 2px; }
+  .theme-toggle svg { width: 18px; height: 18px; }
+  .theme-toggle .i-sun { display: none; }
+  html[data-theme="light"] .theme-toggle .i-sun { display: block; }
+  html[data-theme="light"] .theme-toggle .i-moon { display: none; }
 
   /* ---- footer credit ---- */
   .footer-bottom {
@@ -291,8 +376,8 @@ function start(string $title): void
     max-width: 560px;
     margin: 12px auto 0;
     padding-top: 14px;
-    border-top: 1px solid var(--line, #d4d4d9);
-    color: var(--muted, #6b6b73);
+    border-top: 1px solid var(--ln);
+    color: var(--tx3);
     font-size: .7rem;
     line-height: 1.7;
     text-align: center;
@@ -324,7 +409,7 @@ function start(string $title): void
   }
 
   .footer-bottom .credit-name {
-    color: var(--text, #1a1a1f);
+    color: var(--tx2);
     font-weight: 700;
   }
 
@@ -335,9 +420,9 @@ function start(string $title): void
     width: 26px;
     height: 26px;
     margin-left: 2px;
-    color: var(--text, #1a1a1f);
-    background: var(--fact-bg, #fff);
-    border: 1px solid var(--line, #d4d4d9);
+    color: var(--tx2);
+    background: var(--fill-strong);
+    border: 1px solid var(--ln);
     border-radius: 50%;
     text-decoration: none;
     transition: transform .22s ease, background .22s ease,
@@ -345,12 +430,12 @@ function start(string $title): void
   }
   .github-link:hover {
     transform: scale(1.12) translateY(-1px);
-    background: var(--accent, #2563eb);
+    background: var(--ac);
     color: #fff;
-    border-color: var(--accent, #2563eb);
+    border-color: var(--ac);
   }
   .github-link:active        { transform: scale(.94); }
-  .github-link:focus-visible { outline: 2px solid var(--accent, #2563eb); outline-offset: 3px; }
+  .github-link:focus-visible { outline: 2px solid var(--ac); outline-offset: 3px; }
   .github-link svg { display: block; width: 14px; height: 14px; fill: currentColor; }
 
   @media (prefers-reduced-motion: reduce) {
@@ -364,6 +449,22 @@ function start(string $title): void
   }
 </style>
 </head><body>
+<button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch between light and dark mode" title="Switch theme">
+  <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+  <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+</button>
+<script>
+  (function () {
+    var root = document.documentElement;
+    var btn = document.getElementById('themeToggle');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('fs_theme', next); } catch (e) {}
+    });
+  })();
+</script>
 <?php
 }
 
@@ -389,7 +490,7 @@ function end_page(): void
   >
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
          aria-hidden="true" focusable="false">
-      <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+      <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.950 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
     </svg>
   </a>
 </div>
